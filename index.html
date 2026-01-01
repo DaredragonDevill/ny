@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click-to-Unlock Memory Letters</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .sparkles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle 3s infinite;
+        }
+
+        .header-container {
+            text-align: center;
+            margin-bottom: 40px;
+            z-index: 3;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .new-year-heading {
+            color: #fff;
+            font-size: 3.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5),
+                         0 0 40px rgba(255,255,255,0.3),
+                         3px 3px 6px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3), 3px 3px 6px rgba(0,0,0,0.3); }
+            to { text-shadow: 0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.5), 3px 3px 6px rgba(0,0,0,0.3); }
+        }
+
+        .year {
+            display: inline-block;
+            background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            animation: float 4s ease-in-out infinite;
+            animation-delay: 0.5s;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.95);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .new-year-heading {
+                font-size: 2.2em;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .new-year-heading {
+                font-size: 1.8em;
+            }
+        }
+
+        .envelopes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 35px;
+            max-width: 1400px;
+            width: 100%;
+            padding: 20px;
+            z-index: 3;
+        }
+
+        @media (max-width: 1200px) {
+            .envelopes-container {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .envelopes-container {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 25px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .envelopes-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 10px;
+            }
+        }
+
+        .envelope-wrapper {
+            perspective: 1500px;
+            cursor: pointer;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .envelope-wrapper:nth-child(1) { animation-delay: 0s; }
+        .envelope-wrapper:nth-child(2) { animation-delay: 0.5s; }
+        .envelope-wrapper:nth-child(3) { animation-delay: 1s; }
+        .envelope-wrapper:nth-child(4) { animation-delay: 1.5s; }
+        .envelope-wrapper:nth-child(5) { animation-delay: 2s; }
+        .envelope-wrapper:nth-child(6) { animation-delay: 2.5s; }
+
+        .envelope {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4),
+                        0 0 20px rgba(255,255,255,0.3);
+            transition: all 0.4s ease;
+            transform-style: preserve-3d;
+        }
+
+        .envelope:hover {
+            transform: translateY(-10px) rotateY(5deg);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5),
+                        0 0 40px rgba(255,255,255,0.4);
+        }
+
+        @media (max-width: 768px) {
+            .envelope {
+                height: 320px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .envelope {
+                height: 300px;
+            }
+        }
+
+        .envelope-front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            transition: all 0.6s ease;
+            transform-origin: center;
+        }
+
+        .envelope.opened .envelope-front {
+            opacity: 0;
+            transform: rotateY(180deg) scale(0.8);
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .envelope-front {
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .envelope-front {
+                padding: 20px;
+            }
+        }
+
+        .envelope-icon {
+            width: 130px;
+            height: 100px;
+            position: relative;
+            margin-bottom: 25px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .envelope-body {
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3),
+                        inset 0 -2px 5px rgba(0,0,0,0.1);
+        }
+
+        .envelope-flap {
+            width: 0;
+            height: 0;
+            border-left: 65px solid transparent;
+            border-right: 65px solid transparent;
+            border-top: 55px solid #fab1a0;
+            position: absolute;
+            top: -45px;
+            left: 0;
+            filter: drop-shadow(0 3px 8px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .envelope-wrapper:hover .envelope-flap {
+            transform: translateY(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .envelope-icon {
+                width: 110px;
+                height: 85px;
+            }
+            
+            .envelope-body {
+                height: 70px;
+            }
+            
+            .envelope-flap {
+                border-left: 55px solid transparent;
+                border-right: 55px solid transparent;
+                border-top: 45px solid #fab1a0;
+            }
+        }
+
+        .heart-icon {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5em;
+            animation: heartbeat 1.2s infinite;
+            filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            25% { transform: translateX(-50%) scale(1.2); }
+            50% { transform: translateX(-50%) scale(1); }
+            75% { transform: translateX(-50%) scale(1.15); }
+        }
+
+        @media (max-width: 768px) {
+            .heart-icon {
+                font-size: 2.2em;
+            }
+        }
+
+        .envelope-label {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+
+        .click-hint {
+            font-size: 1em;
+            color: rgba(255,255,255,0.9);
+            margin-top: 12px;
+            font-style: italic;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .envelope-label {
+                font-size: 1.2em;
+            }
+            
+            .click-hint {
+                font-size: 0.9em;
+            }
+        }
+
+        .letter-content {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+            border-radius: 20px;
+            padding: 30px;
+            opacity: 0;
+            transition: all 0.6s ease 0.4s;
+            overflow-y: auto;
+            transform: scale(0.9);
+            box-shadow: inset 0 0 30px rgba(255,192,203,0.3);
+        }
+
+        .envelope.opened .letter-content {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        @media (max-width: 768px) {
+            .letter-content {
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .letter-content {
+                padding: 20px;
+                font-size: 0.95em;
+            }
+        }
+
+        .letter-content h3 {
+            color: #e74c3c;
+            margin-bottom: 18px;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .letter-content p {
+            line-height: 1.9;
+            color: #444;
+            font-size: 1.05em;
+        }
+
+        @media (max-width: 768px) {
+            .letter-content h3 {
+                font-size: 1.3em;
+            }
+            
+            .letter-content p {
+                font-size: 1em;
+                line-height: 1.8;
+            }
+        }
+
+        .signature {
+            margin-top: 20px;
+            font-style: italic;
+            color: #888;
+            text-align: right;
+        }
+
+        .reset-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            font-weight: bold;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 480px) {
+            .reset-btn {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+        }
+
+        .reset-all {
+            margin-top: 50px;
+            margin-bottom: 30px;
+            padding: 15px 40px;
+            background: white;
+            color: #667eea;
+            border: 3px solid #667eea;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 3;
+            animation: float 5s ease-in-out infinite;
+        }
+
+        .reset-all:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .reset-all:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        @media (max-width: 768px) {
+            .reset-all {
+                padding: 12px 30px;
+                font-size: 1.1em;
+                margin-top: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .reset-all {
+                padding: 10px 25px;
+                font-size: 1em;
+                margin-top: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sparkles" id="sparkles"></div>
+    
+    <div class="header-container">
+        <h2 class="new-year-heading">🎉 Happy New Year <span class="year">2025</span>! 🎊</h2>
+        <h1>💌 Memory Letters</h1>
+        <p class="subtitle">Click each envelope to unlock a special memory</p>
+    </div>
+    
+    <div class="envelopes-container" id="envelopesContainer"></div>
+    
+    <button class="reset-all" onclick="resetAll()">✨ Reset All Letters ✨</button>
+
+    <script>
+        // Create sparkles
+        function createSparkles() {
+            const sparklesContainer = document.getElementById('sparkles');
+            for (let i = 0; i < 50; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 3 + 's';
+                sparklesContainer.appendChild(sparkle);
+            }
+        }
+
+        createSparkles();
+        const memories = [
+            {
+                title: "A Moment I Won't Forget",
+                content: "Every moment, slighest of the minute spent with you has been a treasure. From all day discord conversations to our small talks, i have been blessed to have you in my life.",
+                signature: "With love"
+            },
+            {
+                title: "One Thing I Admired This Year",
+                content: "I admire you, your strength, your kindness, and your unwavering support. You have been my rock theough every challenge, every strugle. I'm so grateful to have you by my side.",
+                signature: "Always proud"
+            },
+            {
+                title: "One thing About You That Deserves Most Credit",
+                content: " No matter what was going on, you always found a way to make me smile. If something was wrong. I knew whom I could turn to. You were always there for me yet times when I was not there for you.",
+                signature: "Always thankful"
+            },
+            {
+                title: "What You Mean to Me",
+                content: "You've been my constant through every storm, my celebration in every victory. Your kindness, humor, and unwavering support have shaped who I am. Thank you for being exactly who you are.",
+                signature: "Forever grateful"
+            },
+            {
+                title: "A Promise for Tomorrow",
+                content: "As we move forward, I promise to keep making memories with you, to laugh more, to be present in the little moments, and to remind you how much you matter—today, tomorrow, and always.",
+                signature: "Looking forward together"
+            },
+            {
+                title: "The Day Everything Changed",
+                content: "I didn't know that randomly talking on discord could change everything. But talking with you every time , I realized I'd found someone truly special. That was the beginning of something beautiful.",
+                signature: "Cherishing every moment"
+            }
+        ];
+
+        function createEnvelope(memory, index) {
+            return `
+                <div class="envelope-wrapper">
+                    <div class="envelope" id="envelope-${index}" onclick="openEnvelope(${index})">
+                        <div class="envelope-front">
+                            <div class="envelope-icon">
+                                <div class="envelope-body">
+                                    <div class="envelope-flap"></div>
+                                </div>
+                                <div class="heart-icon">❤️</div>
+                            </div>
+                            <div class="envelope-label">Memory #${index + 1}</div>
+                            <div class="click-hint">Click to open</div>
+                        </div>
+                        <div class="letter-content">
+                            <h3>${memory.title}</h3>
+                            <p>${memory.content}</p>
+                            <p class="signature">— ${memory.signature}</p>
+                            <button class="reset-btn" onclick="event.stopPropagation(); closeEnvelope(${index})">Close Letter</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initEnvelopes() {
+            const container = document.getElementById('envelopesContainer');
+            container.innerHTML = memories.map((memory, index) => createEnvelope(memory, index)).join('');
+        }
+
+        function openEnvelope(index) {
+            const envelope = document.getElementById(`envelope-${index}`);
+            if (!envelope.classList.contains('opened')) {
+                envelope.classList.add('opened');
+            }
+        }
+
+        function closeEnvelope(index) {
+            const envelope = document.getElementById(`envelope-${index}`);
+            envelope.classList.remove('opened');
+        }
+
+        function resetAll() {
+            document.querySelectorAll('.envelope').forEach(envelope => {
+                envelope.classList.remove('opened');
+            });
+        }
+
+        initEnvelopes();
+    </script>
+</body>
+</html>
